@@ -31,6 +31,11 @@ async def updateDKP():
         shared_data.dkp_rankings.append({"playerId": row["name"], "points": row["totalePunti"]})
     return True
 
+def myDKP(playerName: str):
+    for row in shared_data.dkp_rankings:
+        if row["playerId"] == playerName:
+            return row["points"]
+    return 0
 '''
 FUNZIONI PER GESTIRE LE INTERAZIONI
 '''
@@ -51,6 +56,10 @@ async def callbackDropChooseItemType(interaction: discord.Interaction, param: di
     if config.DEBUG:
         print("callbackDropChooseItemType param")
         print(param)
+    if not myDKP(await MyDBInterface.getMemberId(str(interaction.user.id))) >= config.MINIMUM_DKP_POINTS_PER_ITEM:
+        await interaction.response.send_message("Non si posseggono abbastanza DKP", ephemeral=True)
+        return
+
     message = f"E' stato scelto l'oggetto **{param["itemName"]}**.\n" + "Qual'è il motivo della tua richiesta?\n"
     button_params = []
     button_params.append({"label": "BIS WISH", "func": callbackDropChooseItemReason, "func_param": { "itemId": param["id"], "reason": "BIS WISH" } })

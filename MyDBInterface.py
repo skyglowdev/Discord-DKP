@@ -2,15 +2,13 @@ import requests
 
 import config
 
-nGrokURI = "https://46e9-148-113-42-214.ngrok-free.app/api"
-
 '''
 ACCOUNT MANAGEMENT
 '''
 async def getMemberName(discordId: str):
     if config.DEBUG:
         print("getMemberName")
-    url = nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi"
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -40,7 +38,9 @@ async def getMemberName(discordId: str):
     return ret
 
 async def getMemberId(discordId: str):
-    url = nGrokURI+"/MembersApi"
+    if config.DEBUG:
+        print("getMemberId")
+    url = config.nGrokURI+"/MembersApi"
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -52,11 +52,9 @@ async def getMemberId(discordId: str):
     i = 0
     flag = 1
     ret = -1
-    print ("discordId " + discordId)
-    print ('data[i]["characterName"] ' +data[i]["characterName"])
-    print ('data[i]["secondaryCharacterName"] ' +data[i]["secondaryCharacterName"])
     while i < len(data) and flag:
-        print(data[i])
+        if config.DEBUG:
+            print(data[i])
         try:
             if data[i]["characterName"] == discordId or data[i]["secondaryCharacterName"] == discordId:
                 ret = data[i]["idMembers"]
@@ -64,15 +62,14 @@ async def getMemberId(discordId: str):
         except Exception as e:
             if config.DEBUG:
                 print(str(data[i]) + " record errato")
-        finally:
-            i += 1
+        i += 1
     if config.DEBUG:
         print ("ret " + str(ret))
     return ret
 
 async def getPlayerIdFromName(playerName: str):
     print("getPlayerIdFromName")
-    url = nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi"
 
     response = requests.get(url)
 
@@ -104,7 +101,7 @@ async def getPlayerIdFromName(playerName: str):
 async def CreateAccount(playerName: str, discordId: str):
     if config.DEBUG:
         print("CreateAccount")
-    url = nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi"
     data = { "name": playerName, "characterName": discordId}
 #    if DEBUG:
     print(data)
@@ -121,7 +118,7 @@ async def CreateAccount(playerName: str, discordId: str):
 
 async def postPlayerName1(playerName: str, discordId: str):
     print("postPlayerName1")
-    url = nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi"
     data = { "idMembers": playerName, "characterName": discordId }
     response = requests.post(url, json=data)
 
@@ -131,7 +128,7 @@ async def postPlayerName1(playerName: str, discordId: str):
 
 async def getDiscordId1(playerName: str):
     print("getPlayerIdFromName")
-    url = nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi"
 
     response = requests.get(url)
 
@@ -159,7 +156,7 @@ async def getDiscordId1(playerName: str):
 
 async def postPlayerName2(playerId: int, playerName: str, discordId1: str, discordId2: str):
     print("postPlayerName2")
-    url = nGrokURI+"/MembersApi/"+str(playerId)
+    url = config.nGrokURI+"/MembersApi/"+str(playerId)
     if config.DEBUG:
         print("URL: "+ url)
                 
@@ -176,7 +173,7 @@ GENERIC
 '''
 async def getAllDKP():
     print("getAllDKP")
-    url = nGrokURI+"/ClassificaApi"
+    url = config.nGrokURI+"/ClassificaApi"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -192,7 +189,7 @@ ALL ITEMS
 '''
 async def listItems():
     print("listItems")
-    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -204,7 +201,7 @@ async def listItems():
 
 async def listArchbossItems():
     print("listArchbossItems")
-    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -220,7 +217,7 @@ async def listArchbossItems():
 
 async def listT2Items():
     print("listT2Items")
-    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -242,7 +239,7 @@ AVAILABLE ITEMS
 '''
 async def listAvailableItems():
     print("listAvailableItems")
-    url = nGrokURI+"/DroppedItemsApi/AvailableDroppedItems"
+    url = config.nGrokURI+"/DroppedItemsApi/AvailableDroppedItems"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -256,7 +253,7 @@ async def requestAvailableItem(playerId: int, itemId: int, reason: str):
     print("requestAvailableItem")
     data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "reason": reason}
 
-    url = nGrokURI+"/DroppeditemsrequestsApi"
+    url = config.nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.post(url, json=data)
 
     if response.status_code != 201:
@@ -271,7 +268,7 @@ async def requestAvailableItem(playerId: int, itemId: int, reason: str):
 
 async def listAvailableItemsRequested(discordId: str):
     print("listAvailableItemsRequested")
-    url = nGrokURI+"/DroppeditemsrequestsApi"
+    url = config.nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -303,7 +300,7 @@ async def requestWishItem(playerId: int, itemId: int):
     print("requestWishItem")
     data = { "itemId": itemId, "playerId": playerId }
 
-    url = nGrokURI+"/ItemRequestsApi"
+    url = config.nGrokURI+"/ItemRequestsApi"
     response = requests.post(url, json=data)
 
     if response.status_code != 201:
@@ -317,7 +314,7 @@ async def requestWishItem(playerId: int, itemId: int):
 
 async def listPlayerWishItems(playerId: int):
     print("listPlayerWishItems")
-    url = nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
+    url = config.nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
     response = requests.get(url)
     if response.status_code != 200:
         print(f"Error: {response.status_code}")
@@ -353,7 +350,7 @@ async def listPlayerWishItems(playerId: int):
 '''
 async def listRequestItems():
     print("listRequestItems")
-    url = nGrokURI+"/ItemRequestsApi?pageNumber=0&pageSize=0"
+    url = config.nGrokURI+"/ItemRequestsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -366,7 +363,7 @@ async def listRequestItems():
 
 def listItemRequests(int_itemId):
     print("listItemRequests")
-    url = nGrokURI+"/ItemRequestsApi/"+int_itemId
+    url = config.nGrokURI+"/ItemRequestsApi/"+int_itemId
     response = requests.get(url)
 
     if response.status_code != 200:
