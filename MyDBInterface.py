@@ -1,0 +1,345 @@
+import requests
+
+import config
+
+nGrokURI = "https://46e9-148-113-42-214.ngrok-free.app/api"
+
+'''
+ACCOUNT MANAGEMENT
+'''
+async def getMemberName(discordId: str):
+    if config.DEBUG:
+        print("getMemberName")
+    url = nGrokURI+"/MembersApi"
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+        return
+
+    data = response.json()
+
+    i = 0
+    flag = 1
+    ret = -1
+    while i < len(data) and flag:
+        print("getMemberName data" + str(data[i]))
+        try:
+            if data[i]["characterName"] == discordId or data[i]["secondaryCharacterName"] == discordId:
+                ret = data[i]["name"]
+                print(type(ret))
+                print("getMemberName ret"+ret)
+                flag = 0
+        except Exception as e:
+            if config.DEBUG:
+                print(str(data[i]) + " record errato")
+        finally:
+            i += 1
+    if config.DEBUG:
+        print ("ret " + str(ret))
+    return ret
+
+async def getMemberId(discordId: str):
+    url = nGrokURI+"/MembersApi"
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+        return
+
+    data = response.json()
+
+    i = 0
+    flag = 1
+    ret = -1
+    print ("discordId " + discordId)
+    print ('data[i]["characterName"] ' +data[i]["characterName"])
+    print ('data[i]["secondaryCharacterName"] ' +data[i]["secondaryCharacterName"])
+    while i < len(data) and flag:
+        print(data[i])
+        try:
+            if data[i]["characterName"] == discordId or data[i]["secondaryCharacterName"] == discordId:
+                ret = data[i]["idMembers"]
+                flag = 0
+        except Exception as e:
+            if config.DEBUG:
+                print(str(data[i]) + " record errato")
+        finally:
+            i += 1
+    if config.DEBUG:
+        print ("ret " + str(ret))
+    return ret
+
+async def getPlayerIdFromName(playerName: str):
+    print("getPlayerIdFromName")
+    url = nGrokURI+"/MembersApi"
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+
+    data = response.json()
+    if config.DEBUG:
+        print(data)
+
+    i = 0
+    flag = 1
+    ret = -1
+    while i < len(data) and flag:
+        try:
+            if data[i]["name"] == playerName:
+                print(data[i])
+                ret = data[i]["idMembers"]
+                flag = 0
+                if config.DEBUG:
+                    print(ret + " id trovato")
+        except Exception as e:
+            if config.DEBUG:
+                print(str(data[i]) + " record errato")
+        finally:
+            i += 1
+    return int(ret)
+
+async def CreateAccount(playerName: str, discordId: str):
+    if config.DEBUG:
+        print("CreateAccount")
+    url = nGrokURI+"/MembersApi"
+    data = { "name": playerName, "characterName": discordId}
+#    if DEBUG:
+    print(data)
+    response = requests.post(url, json=data)
+
+    print (response.json())
+    ret = -1
+    if response.status_code != 201:
+        print(f"Error: {response.status_code}")
+    else:
+        print(f"Creato utente {response.json()["characterName"]} numero {response.json()["idMembers"]}")
+        ret = response.json()["idMembers"]
+    return ret
+
+async def postPlayerName1(playerName: str, discordId: str):
+    print("postPlayerName1")
+    url = nGrokURI+"/MembersApi"
+    data = { "idMembers": playerName, "characterName": discordId }
+    response = requests.post(url, json=data)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+
+
+async def getDiscordId1(playerName: str):
+    print("getPlayerIdFromName")
+    url = nGrokURI+"/MembersApi"
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+
+    data = response.json()
+
+    i = 0
+    flag = 1
+    ret = -1
+    while i < len(data) and flag:
+        try:
+            if data[i]["name"] == playerName:
+                ret = data[i]["characterName"]
+                flag = 0
+                if config.DEBUG:
+                    print(ret + " discordId trovato")
+        except Exception as e:
+            if config.DEBUG:
+                print(str(data[i]) + " record errato")
+        finally:
+            i += 1
+    return ret
+
+async def postPlayerName2(playerId: int, playerName: str, discordId1: str, discordId2: str):
+    print("postPlayerName2")
+    url = nGrokURI+"/MembersApi/"+str(playerId)
+    if config.DEBUG:
+        print("URL: "+ url)
+                
+    data =  { "idMembers": playerId, "name": playerName, "characterName": discordId1, "secondaryCharacterName": discordId2 }
+    response = requests.put(url, json=data)
+
+    if response.status_code != 204:
+        print(f"Error: {response.status_code}")
+        return -1
+    return 0
+
+'''
+GENERIC
+'''
+async def getAllDKP():
+    print("getAllDKP")
+    url = nGrokURI+"/ClassificaApi"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+        return -1
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+'''
+ALL ITEMS
+'''
+async def listItems():
+    print("listAvailableItems")
+    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+async def listArchbossItems():
+    print("listArchbossItems")
+    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    t0data = []
+    for row in data:
+        if row["idBoss"] == 0:
+            t0data.append(row)
+    return t0data
+
+async def listT2Items():
+    print("listT2Items")
+    url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    t2data = []
+    for row in data:
+        if config.DEBUG:
+            print (row)
+        if row["idItem"] >= 87:
+        #if row["idBoss"] == 2:
+            t2data.append(row)
+    return t2data
+
+'''
+AVAILABLE ITEMS
+'''
+
+async def requestAvailableItem(playerId: int, itemId: int, reason: str):
+    print("requestAvailableItem")
+    data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "reason": reason}
+
+    url = nGrokURI+"/DroppeditemsrequestsApi"
+    response = requests.post(url, json=data)
+
+    if response.status_code != 201:
+        print(f"Error: {response.status_code}")
+        ret = None
+    else:
+        data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+async def listAvailableItemsRequested(discordId: str):
+    print("listAvailableItemsRequested")
+    url = nGrokURI+"/DroppeditemsrequestsApi"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+        return None
+    if config.DEBUG:
+        print (response.json())
+    ret = response.json()
+    if config.DEBUG:
+        print("listAvailableItemsRequested ret")
+        print (ret)
+    if len(ret) == 0:  # non ci sono item richiesti (da nessuno)
+        return ret
+
+    playerId = await getMemberId(str(discordId))
+    listrequests= []
+    i = 0
+    while i < len (ret):
+        if ret[i]["idMember"] == playerId:
+            listrequests.append( { "id": ret[i]["idDroppedItemsRequests"], "idLeftItemInGuildStorage": ret[i]["idLeftItemInGuildStorage"], 
+            "description": ret[i]["idLeftItemInGuildStorageNavigation"]["idItemNavigation"]["itemName"], "reason": ret[i]["reason"], "requestDate": ret[i]["requestDate"]} )
+        i+=1
+    return listrequests
+
+'''
+WISH LIST
+totalmente da fare
+'''
+async def requestWishItem(playerId: int, itemId: int):
+    print("requestWishItem")
+    data = { "itemId": itemId, "playerId": playerId }
+
+    url = nGrokURI+"/ItemRequestsApi"
+    response = requests.post(url, json=data)
+
+    if response.status_code != 201:
+        print(f"Error: {response.status_code}")
+        ret = None
+    else:
+        data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+async def listPlayerItemRequests(playerId: int):
+    print("listPlayerItemRequests")
+    url = nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    ret = []
+    i = 0
+    flag = 1
+    while i < len(response.json) and flag:
+        if response[i]["idMember"] == playerId:
+            ret.append(response[i])
+        i+=1
+    return ret
+
+async def listRequestItems():
+    print("listRequestItems")
+    url = nGrokURI+"/ItemRequestsApi?pageNumber=0&pageSize=0"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+
+def listItemRequests(int_itemId):
+    print("listItemRequests")
+    url = nGrokURI+"/ItemRequestsApi/"+int_itemId
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data

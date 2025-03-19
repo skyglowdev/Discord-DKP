@@ -1,0 +1,15 @@
+#Escludi file di configurazione con secrets
+config.py
+
+# Escludi file Python compilati
+__pycache__/
+*.pyc
+*.pyo
+
+# Escludi ambienti virtuali
+venv/
+env/
+
+# Escludi file di configurazione IDE
+*.vscode/
+.idea/

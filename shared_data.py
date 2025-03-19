@@ -1,0 +1,1 @@
+dkp_rankings = []
