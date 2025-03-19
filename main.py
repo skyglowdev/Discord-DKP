@@ -34,7 +34,7 @@ async def on_message(message):
         # Now, you can process the message
         #        print(f"Message from {message.author}: {message.content}")
         # Make sure to process commands if needed
-        await bot.process_commands(message)
+    await bot.process_commands(message)
 
 '''
 ##################
@@ -212,10 +212,10 @@ async def wish(interaction: discord.Interaction):
             i=0
             j+=1
 
-        if k == 0:
+        #if k == 0:
             await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
-        else:
-            await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
+        #else:
+        #    await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
         j=0
         k+=1
 
