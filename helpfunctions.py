@@ -28,11 +28,17 @@ async def updateDKP():
     dkp_rankings = []
     for row in dkplist:
         print(row)
-        shared_data.dkp_rankings.append({"playerId": row["name"], "points": row["totalePunti"]})
+        shared_data.dkp_rankings.append({"playerId": row["idMember"], "playerName": row["name"], "points": row["totalePunti"]}) #row["id"],
     return True
 
 def myDKP(playerName: str):
+    if config.DEBUG:
+        print("myDKP")
     for row in shared_data.dkp_rankings:
+        if config.DEBUG:
+            print("row[playerId] "+ str(row["playerId"]))
+            print("row[playerName] "+ str(row["playerName"]))
+            print("playerName "+ str(playerName))
         if row["playerId"] == playerName:
             return row["points"]
     return 0

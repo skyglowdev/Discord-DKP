@@ -314,6 +314,24 @@ async def requestWishItem(playerId: int, itemId: int):
 
 async def listPlayerWishItems(playerId: int):
     print("listPlayerWishItems")
+    url = config.nGrokURI+"/api/ItemRequestsApi/GetItemRequestsByMemberIdApi/"+str(playerId)
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    else:
+        data = response.json()
+    if config.DEBUG:
+        print (data)
+    ret = []
+    i = 0
+    flag = 1
+    while i < len(data) and flag:
+        if data[i]["playerId"] == playerId:
+            ret.append( { "idItemRequest": data[i]["idItemRequest"], "itemName": data[i]["item"]["itemName"] } )
+        i+=1
+    return ret
+
+    '''    print("listPlayerWishItems")
     url = config.nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
     response = requests.get(url)
     if response.status_code != 200:
@@ -330,6 +348,7 @@ async def listPlayerWishItems(playerId: int):
             ret.append( { "idItemRequest": data[i]["idItemRequest"], "itemName": data[i]["item"]["itemName"] } )
         i+=1
     return ret
+    '''
 '''
 TO DO
 

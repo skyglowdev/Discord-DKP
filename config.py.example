@@ -1,0 +1,13 @@
+# Flag di debug
+DEBUG = True
+
+MINIMUM_DKP_POINTS_PER_ITEM = 100
+
+GUILD_ID = 00000
+ADMIN_ROLE_ID = 00000
+MYDISCORDID = 0000
+CHANNEL_ID = 0000 
+
+TOKEN = ""
+
+nGrokURI = "https://46e9-148-113-42-214.ngrok-free.app/api"
