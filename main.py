@@ -113,9 +113,6 @@ async def register(interaction: discord.Interaction, playername: str):
 
 @bot.tree.command(name="showdkp", description="Mostra la classifica DKP")
 async def showdkp(interaction: discord.Interaction):
-    if not helpfunctions.checkRole(interaction.user.roles):
-        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
-        return
     membername = await MyDBInterface.getMemberName(str(interaction.user.id))
     if config.DEBUG:
         print("membername "+str(membername))
@@ -176,9 +173,6 @@ async def wish(interaction: discord.Interaction):
     if config.DEBUG:
         print("len(list_items) "+str(len(list_items)))
         print("list_items "+str(list_items))
-
-    # RIMUOVERE
-    config.DEBUG = False
 
     message= "BLABLA\n"
     message+="BLABLABLA\n"
