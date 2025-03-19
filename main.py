@@ -6,12 +6,9 @@ from discord.ui import Button, View
 
 import discordcustomviews
 import MyDBInterface
-#from config import DiscordItemDistribution
 import config
 import helpfunctions
 import shared_data
-
-#{playerId, points}
 
 intents=discord.Intents.all()
 '''
@@ -30,16 +27,14 @@ async def on_message(message):
     if config.DEBUG:
         print(f"Message from {message.author}: {message.content}")
     # Check if the message is in the target channel
-    if message.channel.id == config.TARGET_CHANNEL_ID:
+    if message.channel.id == config.CHANNEL_ID:
         # Ignore messages sent by the bot itself
         if message.author == bot.user:
             return
-
         # Now, you can process the message
-#        print(f"Message from {message.author}: {message.content}")
-    
-    # Make sure to process commands if needed
-    await bot.process_commands(message)
+        #        print(f"Message from {message.author}: {message.content}")
+        # Make sure to process commands if needed
+        await bot.process_commands(message)
 
 '''
 ##################
@@ -167,6 +162,7 @@ WISHLIST
 async def wish(interaction: discord.Interaction):
     if config.DEBUG:
         print("droplist")
+    #await interaction.response.defer(ephemeral=True)
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
     if config.DEBUG:
         print(playerId)
@@ -183,6 +179,10 @@ async def wish(interaction: discord.Interaction):
 
     # RIMUOVERE
     config.DEBUG = False
+
+    message= "BLABLA\n"
+    message+="BLABLABLA\n"
+    await interaction.response.send_message(message, ephemeral=True)
 
     len_list_items = len(list_items)
     discordcustomviews.DISCORD_SELECT_MAX =5
@@ -211,10 +211,9 @@ async def wish(interaction: discord.Interaction):
                 "select_param": selectcustom_params, "func": helpfunctions.callbackWishChooseItem, "func_param": playerId })
             i=0
             j+=1
-        message =[]
-        message.append("BLABLABLA")
+
         if k == 0:
-            await interaction.response.send_message("".join(message), view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
+            await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
         else:
             await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
         j=0
@@ -231,16 +230,16 @@ async def wishlist(interaction: discord.Interaction):
     if not helpfunctions.checkRole(interaction.user.roles):
         await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
         return
-    listrequests = await listPlayerItemRequests(playerId)
+    listrequests = await MyDBInterface.listPlayerWishItems(playerId)
     if config.DEBUG:
         print(len(listrequests))
         print(listrequests)
-    message =["Hai richiesto i seguenti oggetti:"]
+    message =["Hai richiesto i seguenti oggetti:\n"]
     button_params = []
     i = 0
     while i < len(listrequests):
         # Creiamo il messaggio dinamico con le opzioni
-        message.append( f"{i+1}️⃣ ** {listrequests[i]["idItemNavigation"]["itemName"]} droppato il {listrequests[i]["dropDate"]} **\n" )
+        message.append( f"{listrequests[i]["idItemRequest"]} ** {listrequests[i]["itemName"]} **\n" )
         i += 1
     await interaction.response.send_message("".join(message), ephemeral=True)
 
@@ -257,7 +256,7 @@ async def droplist(interaction: discord.Interaction):
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco** !", ephemeral=True)
         return
-    list_items = await MyDBInterface.requestAvailableItem()
+    list_items = await MyDBInterface.listAvailableItems()
     if config.DEBUG:
         print(len(list_items))
         print(list_items)
@@ -291,7 +290,7 @@ async def droprequests(interaction: discord.Interaction):
 #        button_params.append( {"label": str(i+1), "itemName": list_items[i]["idItemNavigation"]["itemName"], 
 #            "func": helpfunctions.ChooseItemType, "func_param": { "itemName": list_items[i]["idItemNavigation"]["itemName"], "id": list_items[i]["id"] }} )
         i += 1
-    await interaction.response.send_message("".join(message), ephemeral=True)  #, view=discordviewbuttonchoices.ViewButtonNumberedWithCustomId(button_params), ephemeral=True)
+    await interaction.response.send_message("".join(message), ephemeral=True)
 
 # Evento in caso di connessione
 @bot.event

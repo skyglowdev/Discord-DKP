@@ -16,6 +16,9 @@ def checkRole(roles):
             return True
     return False
 
+def checkChannel(interaction: discord.Interaction):
+    return interaction.channel.id == config.CHANNEL_ID
+
 async def updateDKP():
     if config.DEBUG:
         print("updateDKP")

@@ -191,7 +191,7 @@ async def getAllDKP():
 ALL ITEMS
 '''
 async def listItems():
-    print("listAvailableItems")
+    print("listItems")
     url = nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
@@ -240,9 +240,21 @@ async def listT2Items():
 '''
 AVAILABLE ITEMS
 '''
+async def listAvailableItems():
+    print("listAvailableItems")
+    url = nGrokURI+"/DroppedItemsApi/AvailableDroppedItems"
+    response = requests.get(url)
 
-async def requestAvailableItem():
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    data = response.json()
+    if config.DEBUG:
+        print (data)
+    return data
+
+async def requestAvailableItem(playerId: int, itemId: int, reason: str):
     print("requestAvailableItem")
+    data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "reason": reason}
 
     url = nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.post(url, json=data)
@@ -255,6 +267,7 @@ async def requestAvailableItem():
     if config.DEBUG:
         print (data)
     return data
+
 
 async def listAvailableItemsRequested(discordId: str):
     print("listAvailableItemsRequested")
@@ -285,7 +298,6 @@ async def listAvailableItemsRequested(discordId: str):
 
 '''
 WISH LIST
-totalmente da fare
 '''
 async def requestWishItem(playerId: int, itemId: int):
     print("requestWishItem")
@@ -303,8 +315,29 @@ async def requestWishItem(playerId: int, itemId: int):
         print (data)
     return data
 
-async def listPlayerItemRequests(playerId: int):
-    print("listPlayerItemRequests")
+async def listPlayerWishItems(playerId: int):
+    print("listPlayerWishItems")
+    url = nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code}")
+    else:
+        data = response.json()
+    if config.DEBUG:
+        print (data)
+    ret = []
+    i = 0
+    flag = 1
+    while i < len(data) and flag:
+        if data[i]["playerId"] == playerId:
+            ret.append( { "idItemRequest": data[i]["idItemRequest"], "itemName": data[i]["item"]["itemName"] } )
+        i+=1
+    return ret
+'''
+TO DO
+
+async def listPlayerWishItems(playerId: int):
+    print("listPlayerWishItems")
     url = nGrokURI+"/ItemRequestsApi?pageNumber=1&pageSize=999999"
     response = requests.get(url)
     if response.status_code != 200:
@@ -317,7 +350,7 @@ async def listPlayerItemRequests(playerId: int):
             ret.append(response[i])
         i+=1
     return ret
-
+'''
 async def listRequestItems():
     print("listRequestItems")
     url = nGrokURI+"/ItemRequestsApi?pageNumber=0&pageSize=0"
