@@ -257,7 +257,7 @@ async def droplist(interaction: discord.Interaction):
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco** !", ephemeral=True)
         return
-    list_items = await MyDBInterface.listItems()
+    list_items = await MyDBInterface.requestAvailableItem()
     if config.DEBUG:
         print(len(list_items))
         print(list_items)

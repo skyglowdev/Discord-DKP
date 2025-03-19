@@ -241,9 +241,8 @@ async def listT2Items():
 AVAILABLE ITEMS
 '''
 
-async def requestAvailableItem(playerId: int, itemId: int, reason: str):
+async def requestAvailableItem():
     print("requestAvailableItem")
-    data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "reason": reason}
 
     url = nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.post(url, json=data)
