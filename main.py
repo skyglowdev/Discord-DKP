@@ -119,10 +119,10 @@ async def showdkp(interaction: discord.Interaction):
     message = "**🏆 Classifica DKP 🏆**\n"
     i = 0
     while i < len(shared_data.dkp_rankings):
-        if not membername == shared_data.dkp_rankings[i]["playerId"]:
-            message += f"{i}. {shared_data.dkp_rankings[i]["playerId"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n"
+        if not membername == shared_data.dkp_rankings[i]["playerName"]:
+            message += f"{i}. {shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n"
         else:
-            message += f"{i}. **{shared_data.dkp_rankings[i]["playerId"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n"
+            message += f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n"
         i+=1
     await interaction.response.send_message(message, ephemeral=True)
 
