@@ -259,14 +259,15 @@ async def requestAvailableItem(playerId: int, itemId: int, reason: str):
     url = config.nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.post(url, json=data)
 
-    if response.status_code != 201:
-        print(f"Error: {response.status_code}")
-        ret = None
+    ret = None
+    if response.status_code == 201:
+        ret = response.json()
     else:
-        data = response.json()
+        ret = response.status_code
+    print (ret)
     if config.DEBUG_VERBOSE:
-        print (data)
-    return data
+        print (ret)
+    return ret
 
 
 async def listAvailableItemsRequested(discordId: str):

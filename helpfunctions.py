@@ -52,8 +52,9 @@ async def callbackWishChooseItem(interaction: discord.Interaction,  obj: discord
     if config.DEBUG_VERBOSE:
         print("callbackWishChooseItem param")
         print(param)
-    
-    data = await MyDBInterface.requestWishItem(param["id"], obj.values[0])
+    print("callbackWishChooseItem param")
+    print(param)
+    data = await MyDBInterface.requestWishItem(param["playerId"], obj.values[0])
     message = f"E' stata inserita la richiesta numero {data["idItemRequest"]}\n"
     await interaction.response.send_message(message, ephemeral=True)
 
@@ -81,5 +82,7 @@ async def callbackDropChooseItemReason(interaction: discord.Interaction, param: 
     ret = await MyDBInterface.requestAvailableItem(playerId, param["itemId"], param["reason"])
     if ret == None:
         await interaction.response.send_message("❌ La richiesta non è andata a buon fine contatta un amministratore", ephemeral=True)  # Assicura una risposta
+    elif ret == 409:
+        await interaction.response.send_message("❌ La richiesta è un duplicato", ephemeral=True)  # Assicura una risposta
     else:
         await interaction.response.send_message(f"✅ La richiesta oggetti numero {ret["idDroppedItemsRequests"]} è stata inserita", ephemeral=True)  # Assicura una risposta
