@@ -54,6 +54,12 @@ async def callbackWishChooseItem(interaction: discord.Interaction,  obj: discord
         print(param)
     print("callbackWishChooseItem param")
     print(param)
+
+    list_requested = await MyDBInterface.listPlayerWishItems(param["playerId"])
+    if ( len(list_requested) > config.MAX_REQUEST_ITEMS_NORMAL+config.MAX_REQUEST_ITEMS_ARCHBOSS ):
+        await interaction.response.send_message(f"Sono già stati richiesti il massimo numero di oggetti.\nIn caso di problemi contattare un admin", ephemeral=True)
+        return
+
     data = await MyDBInterface.requestWishItem(param["playerId"], obj.values[0])
     message = f"E' stata inserita la richiesta numero {data["idItemRequest"]}\n"
     await interaction.response.send_message(message, ephemeral=True)

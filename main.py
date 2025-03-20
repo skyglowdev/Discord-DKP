@@ -160,18 +160,14 @@ WISHLIST
 async def wish(interaction: discord.Interaction):
     if config.DEBUG_VERBOSE:
         print("droplist")
-    if not helpfunctions.checkRole(interaction.user.roles):
-        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
-        return
+    #if not helpfunctions.checkRole(interaction.user.roles):
+    #    await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+    #    return
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
     if config.DEBUG_VERBOSE:
         print(playerId)
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
-        return
-    list_requested = await MyDBInterface.listPlayerWishItems(playerId)
-    if ( len(list_requested) >= config.MAX_REQUEST_ITEMS_NORMAL+config.MAX_REQUEST_ITEMS_ARCHBOSS ):
-        await interaction.response.send_message(f"Sono già stati richiesti il massimo numero di oggetti.\nIn caso di problemi contattare un admin", ephemeral=True)
         return
 
     await interaction.response.defer(thinking=True, ephemeral=True)
@@ -208,9 +204,9 @@ async def wishlist(interaction: discord.Interaction):
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
         return
-    if not helpfunctions.checkRole(interaction.user.roles):
-        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
-        return
+    #if not helpfunctions.checkRole(interaction.user.roles):
+    #    await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+    #    return
     listrequests = await MyDBInterface.listPlayerWishItems(playerId)
     if config.DEBUG_VERBOSE:
         print(len(listrequests))
