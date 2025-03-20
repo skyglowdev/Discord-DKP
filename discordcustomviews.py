@@ -1,11 +1,12 @@
 import discord
 from discord.ui import Button, View
+import typing
 
 import config
 import MyDBInterface
 
 DISCORD_SELECT_MAX = 5
-DISCORD_SELECT_OPTIONS_MAX = 5
+DISCORD_SELECT_OPTIONS_MAX = 25
 DISCORD_BUTTON_MAX = 25
 
 def func_DefaultInteraction(interaction: discord.Interaction):
@@ -17,7 +18,7 @@ ViewButtonNumberedWithCustomId
 
 class CustomButton(discord.ui.Button):
     def __init__(self, label: str, function, param, style=discord.ButtonStyle.primary):
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print ("CustomButton param")
             print (param)
         super().__init__(label=label, style=style, custom_id=str(param))
@@ -31,7 +32,7 @@ class CustomButton(discord.ui.Button):
 #button_param = [{"label": "nome label", "func": funzione_ per_l'azione, "func_param": parametro_funzione}]
 class ViewButtonNumberedWithCustomId(View):
     def __init__(self, button_param, function_interaction_check = func_DefaultInteraction):
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print ("ViewButtonNumberedWithCustomId param")
             print (button_param)
         super().__init__()
@@ -40,7 +41,7 @@ class ViewButtonNumberedWithCustomId(View):
         self.function_interaction_check = function_interaction_check
         i = 0
         while i < len(button_param):
-            if config.DEBUG :
+            if config.DEBUG_VERBOSE :
                 print(button_param[i])
             self.add_item (CustomButton( label=button_param[i]["label"], style=discord.ButtonStyle.primary, function=button_param[i]["func"], param=button_param[i]["func_param"] ) )
             i+=1
@@ -56,7 +57,7 @@ class CustomSelect(discord.ui.Select):
         self.func = function
         self.func_param = func_param
 
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print ("CustomSelect select_param")
             print (select_param)
 
@@ -66,10 +67,10 @@ class CustomSelect(discord.ui.Select):
             #print ("CustomSelect i "+str(i))
             #if config.DEBUG :
             # print(select_param[i])
-            if not select_param[i]["emoji"] == None:
-                options.append( discord.SelectOption(value=select_param[i]["id"], label=select_param[i]["label"], description=select_param[i]["description"], emoji=select_param[i]["emoji"]) )
-            else:
-                options.append( discord.SelectOption(value=select_param[i]["id"], label=select_param[i]["label"], description=select_param[i]["description"]) )
+            #if not select_param[i]["emoji"] == None:
+            options.append( discord.SelectOption(value=select_param[i]["id"], label=select_param[i]["label"], description=select_param[i]["description"], emoji=select_param[i]["emoji"]) )
+            #else:
+            #    options.append( discord.SelectOption(value=select_param[i]["id"], label=select_param[i]["label"], description=select_param[i]["description"]) )
             i+=1
 
         super().__init__(placeholder=placeholder,options=options, max_values=1)
@@ -81,29 +82,23 @@ class CustomSelect(discord.ui.Select):
         ]
         '''
     async def callback(self, interaction: discord.Interaction):
-        await self.func(interaction, self.func_param, self)
+        await self.func(interaction, self, self.func_param)
 
 class ViewSelectWithCustomId(View):
     def __init__(self, view_param, function_interaction_check = func_DefaultInteraction):
 
         super().__init__()
         
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print ("ViewSelectWithCustomId view_param")
             print (view_param)
         super().__init__()
-        test_select = discord.ui.Select(placeholder="Test", options=[
-            discord.SelectOption(label="Opzione 1", value="id_1"),
-            discord.SelectOption(label="Opzione 2", value="id_2")
-            ])
-        if config.DEBUG:
-            print("test_select " + str(test_select))
+
         self.function_interaction_check = function_interaction_check
-        #i= 0
         i = 0
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print("ViewSelectWithCustomId len(view_param) "+str(len(view_param)))
-        DISCORD_SELECT_MAX
+        
         while i < len(view_param):
             #print ("ViewSelectWithCustomId i "+str(i))
             itemx= CustomSelect(
@@ -115,9 +110,43 @@ class ViewSelectWithCustomId(View):
             #print("len(self.children)"+ str(len(self.children)))
             self.add_item( itemx )
             i+=1
-        
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return self.function_interaction_check(interaction)
+
+#
+# la funzione chiamante deve avere await interaction.response.defer(thinking=True, ephemeral=True)  # Mostra un "sta pensando..."
+async def SplitSelectOptionsOnViews(interaction: discord.Interaction , message: str, placeholder: str, l: list, f: typing.Callable, func_param: dict):
+    len_l = len(l)
+    if len_l == 0:
+        raise Exception("Si deve passare almeno un opzione")
+
+    k = 0
+    j = 0
+    i= 0
+    while i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX < len_l:
+        print("k =" +str(k))
+        # view di 5 select
+        viewcustom_params = []
+        while i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX < len_l and j < DISCORD_SELECT_MAX:
+            #select di 25 options
+            selectcustom_params = []
+            while i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX < len_l and i < DISCORD_SELECT_OPTIONS_MAX:
+                pointer = i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX
+                selectcustom_params.append({ "id": l[pointer]["id"], "label": l[pointer]["label"],
+                    "description": "" , "emoji": l[pointer]["emoji"]})
+                i+=1
+            viewcustom_params.append( { "placeholder": placeholder + str(k*DISCORD_SELECT_MAX+j+1),
+                "select_param": selectcustom_params, "func": f, "func_param": func_param })
+            i=0
+            j+=1
+        if k == 0:
+            await interaction.followup.send(message,view=ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
+        else:
+            await interaction.followup.send(view=ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
+        j=0
+        k+=1
+
 
 
 '''

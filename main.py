@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import json
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Button, View
@@ -24,7 +25,7 @@ GESTIONE EVENTI
 # Event to handle messages
 @bot.event
 async def on_message(message):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(f"Message from {message.author}: {message.content}")
     # Check if the message is in the target channel
     if message.channel.id == config.CHANNEL_ID:
@@ -90,15 +91,15 @@ async def register(interaction: discord.Interaction, playername: str):
     memberId = await MyDBInterface.getMemberId(str_discordId)
     print("memberId "+str(memberId))
     if memberId != -1:
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print("trova il discordId -> esiste già l'utente")
         await interaction.response.send_message("❌ Questo account discord è già stato registrato.", ephemeral=True)
     else:   # non trova il discordId -> controllare se esiste il playername
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print("non trova il discordId -> controllare se esiste il playername")
         playerId = await MyDBInterface.getPlayerIdFromName(playername)
         if playerId != -1:
-            if config.DEBUG:
+            if config.DEBUG_VERBOSE:
                 print("aggiungi (secondo) discord al membro")
             ret = await MyDBInterface.postPlayerName2(playerId, playername, await MyDBInterface.getDiscordId1(playername), str_discordId)
             if ret != -1:
@@ -106,7 +107,7 @@ async def register(interaction: discord.Interaction, playername: str):
             else:
                 await interaction.response.send_message("❌ Errore registrazione secondo account discord.", ephemeral=True)
         else:
-            if config.DEBUG:
+            if config.DEBUG_VERBOSE:
                 print("crea membro")
             playerId = await MyDBInterface.CreateAccount(playername, str_discordId)
             await interaction.response.send_message(f"✅ Account discord {playerId} registato al giocatore {playername} con discord id {str_discordId}", ephemeral=True)
@@ -114,7 +115,7 @@ async def register(interaction: discord.Interaction, playername: str):
 @bot.tree.command(name="showdkp", description="Mostra la classifica DKP")
 async def showdkp(interaction: discord.Interaction):
     membername = await MyDBInterface.getMemberName(str(interaction.user.id))
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("membername "+str(membername))
     message = "**🏆 Classifica DKP 🏆**\n"
     i = 0
@@ -157,66 +158,52 @@ WISHLIST
 '''
 @bot.tree.command(name="wish", description="Aggiunta oggetto a lista desideri")
 async def wish(interaction: discord.Interaction):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("droplist")
-    #await interaction.response.defer(ephemeral=True)
+    if not helpfunctions.checkRole(interaction.user.roles):
+        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+        return
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(playerId)
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
         return
-    if not helpfunctions.checkRole(interaction.user.roles):
-        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+    list_requested = await MyDBInterface.listPlayerWishItems(playerId)
+    if ( len(list_requested) >= config.MAX_REQUEST_ITEMS_NORMAL+config.MAX_REQUEST_ITEMS_ARCHBOSS ):
+        await interaction.response.send_message(f"Sono già stati richiesti il massimo numero di oggetti.\nIn caso di problemi contattare un admin", ephemeral=True)
         return
+
+    await interaction.response.defer(thinking=True, ephemeral=True)
+
     list_items = await MyDBInterface.listT2Items()
-    if config.DEBUG:
-        print("len(list_items) "+str(len(list_items)))
-        print("list_items "+str(list_items))
+    if config.DEBUG_VERBOSE:
+        print("T2 len(list_items) "+str(len(list_items)))
+        print("T2 list_items \n"+json.dumps(list_items, indent=4))
 
-    message= "BLABLA\n"
-    message+="BLABLABLA\n"
-    await interaction.response.send_message(message, ephemeral=True)
+    message= "Scegliere un oggetto T2 dalle liste sottostanti\n"
+    placeholder= "Scegli un oggetto da inserire nella lista desideri"
+    l = []
+    for m in list_items:
+        l.append({ "id": m["itemId"], "label": m["itemName"],
+            "description": "" , "emoji": None}) #"emoji": "🔥"})
+    await discordcustomviews.SplitSelectOptionsOnViews(interaction, message, placeholder, l, helpfunctions.callbackWishChooseItem, {"playerId": playerId})
 
-    len_list_items = len(list_items)
-    discordcustomviews.DISCORD_SELECT_MAX =5
-    discordcustomviews.DISCORD_SELECT_OPTIONS_MAX = 25
-    k = 0
-    j = 0
-    i= 0
-    while i+j*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX+k*discordcustomviews.DISCORD_SELECT_MAX*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX < len_list_items:
-        # view di 5 select
-        viewcustom_params = []
-        while i+j*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX+k*discordcustomviews.DISCORD_SELECT_MAX*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX < len_list_items and j < discordcustomviews.DISCORD_SELECT_MAX:
-            #select di 25 options
-            selectcustom_params = []
-            while i+j*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX+k*discordcustomviews.DISCORD_SELECT_MAX*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX < len_list_items and i < discordcustomviews.DISCORD_SELECT_OPTIONS_MAX:
-                pointer = i+j*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX+k*discordcustomviews.DISCORD_SELECT_MAX*discordcustomviews.DISCORD_SELECT_OPTIONS_MAX
-                if config.DEBUG:
-                    print ("wish pointer" + str(pointer))
-                if True: #opzione per emoji
-                    selectcustom_params.append({ "id": list_items[pointer]["idItem"], "label": list_items[pointer]["itemName"],
-                        "description": "" , "emoji": None})
-                else:
-                    selectcustom_params.append({ "id": list_items[pointer]["idItem"], "label": list_items[pointer]["itemName"],
-                        "description": "" , "emoji": "🔥"})
-                i+=1
-            viewcustom_params.append( { "placeholder": "Scegli un oggetto da inserire nella lista desideri" + str(k*discordcustomviews.DISCORD_SELECT_MAX+j+1), 
-                "select_param": selectcustom_params, "func": helpfunctions.callbackWishChooseItem, "func_param": playerId })
-            i=0
-            j+=1
-
-        #if k == 0:
-            await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
-        #else:
-        #    await interaction.followup.send(view=discordcustomviews.ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
-        j=0
-        k+=1
+    message= ":fire: Scegliere un arma archboss dalla lista: :fire:\n"
+    list_items = await MyDBInterface.listArchbossItems()
+    if config.DEBUG_VERBOSE:
+        print("ARCHBOSS len(list_items) "+str(len(list_items)))
+        print("ARCHBOSS list_items \n"+json.dumps(list_items, indent=4))
+    l = []
+    for m in list_items:
+        l.append({ "id": m["itemId"], "label": m["itemName"],
+            "description": "" , "emoji": None}) #"emoji": "🔥"})
+    await discordcustomviews.SplitSelectOptionsOnViews(interaction, message, placeholder, l, helpfunctions.callbackWishChooseItem, {"playerId": playerId})
 
 @bot.tree.command(name="wishlist", description="Mostra la lista desideri")
 async def wishlist(interaction: discord.Interaction):
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(playerId)
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
@@ -225,7 +212,7 @@ async def wishlist(interaction: discord.Interaction):
         await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
         return
     listrequests = await MyDBInterface.listPlayerWishItems(playerId)
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(len(listrequests))
         print(listrequests)
     message =["Hai richiesto i seguenti oggetti:\n"]
@@ -242,16 +229,16 @@ DROPS
 '''
 @bot.tree.command(name="droplist", description="Mostra tutti gli oggetti richiedibili")
 async def droplist(interaction: discord.Interaction):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("droplist")
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(playerId)
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco** !", ephemeral=True)
         return
     list_items = await MyDBInterface.listAvailableItems()
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print(len(list_items))
         print(list_items)
 
@@ -269,7 +256,7 @@ async def droplist(interaction: discord.Interaction):
 
 @bot.tree.command(name="droprequests", description="Mostra tutti gli oggetti richiesti")
 async def droprequests(interaction: discord.Interaction):    
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("droplist")
     list_itemrequest = await MyDBInterface.listAvailableItemsRequested(interaction.user.id)
     print(list_itemrequest)
@@ -277,13 +264,15 @@ async def droprequests(interaction: discord.Interaction):
     message =[]
     button_params = []
     i = 0
-    while i < len(list_itemrequest):
+    for item_request in list_itemrequest:
         # Creiamo il messaggio dinamico con le opzioni
-        message.append( f"{i+1}️⃣ ** {list_itemrequest[i]["id"]} {list_itemrequest[i]["description"]} {list_itemrequest[i]["reason"]} richiesto il {list_itemrequest[i]["requestDate"]} **\n" )
+        message.append( f"{i+1}️⃣ ** {item_request["id"]} {item_request["description"]} {item_request["reason"]} richiesto il {item_request["requestDate"]} **\n" )
 #        # Creiamo una View con le opzioni dinamiche
 #        button_params.append( {"label": str(i+1), "itemName": list_items[i]["idItemNavigation"]["itemName"], 
 #            "func": helpfunctions.ChooseItemType, "func_param": { "itemName": list_items[i]["idItemNavigation"]["itemName"], "id": list_items[i]["id"] }} )
         i += 1
+    if len(message) == 0:
+        message.append("Non sono stati richiesti item!")
     await interaction.response.send_message("".join(message), ephemeral=True)
 
 # Evento in caso di connessione

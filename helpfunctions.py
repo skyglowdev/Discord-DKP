@@ -9,7 +9,7 @@ import shared_data
 FUNZIONI GENERICHE
 '''
 def checkRole(roles):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("checkRole")
     for role in roles:
         if role.id == config.ADMIN_ROLE_ID:
@@ -20,7 +20,7 @@ def checkChannel(interaction: discord.Interaction):
     return interaction.channel.id == config.CHANNEL_ID
 
 async def updateDKP():
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("updateDKP")
     dkplist = await MyDBInterface.getAllDKP()
     if dkplist == -1:
@@ -32,10 +32,10 @@ async def updateDKP():
     return True
 
 def myDKP(playerName: str):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("myDKP")
     for row in shared_data.dkp_rankings:
-        if config.DEBUG:
+        if config.DEBUG_VERBOSE:
             print("row[playerId] "+ str(row["playerId"]))
             print("row[playerName] "+ str(row["playerName"]))
             print("playerName "+ str(playerName))
@@ -48,18 +48,18 @@ FUNZIONI PER GESTIRE LE INTERAZIONI
 '''async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"Hai selezionato: {self.values[0]}", ephemeral=True)
 '''
-async def callbackWishChooseItem(interaction: discord.Interaction, param: int, obj: discordcustomviews.CustomSelect):
-    if config.DEBUG:
+async def callbackWishChooseItem(interaction: discord.Interaction,  obj: discordcustomviews.CustomSelect, param: dict):
+    if config.DEBUG_VERBOSE:
         print("callbackWishChooseItem param")
         print(param)
     
-    data = await MyDBInterface.requestWishItem(param, obj.values[0])
+    data = await MyDBInterface.requestWishItem(param["id"], obj.values[0])
     message = f"E' stata inserita la richiesta numero {data["idItemRequest"]}\n"
     await interaction.response.send_message(message, ephemeral=True)
 
 
 async def callbackDropChooseItemType(interaction: discord.Interaction, param: dict):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("callbackDropChooseItemType param")
         print(param)
     if not myDKP(await MyDBInterface.getMemberId(str(interaction.user.id))) >= config.MINIMUM_DKP_POINTS_PER_ITEM:
@@ -74,7 +74,7 @@ async def callbackDropChooseItemType(interaction: discord.Interaction, param: di
     await interaction.response.send_message(message, view=discordcustomviews.ViewButtonNumberedWithCustomId(button_params), ephemeral=True)
 
 async def callbackDropChooseItemReason(interaction: discord.Interaction, param: dict):
-    if config.DEBUG:
+    if config.DEBUG_VERBOSE:
         print("callbackDropChooseItemReason param")
         print(param)
     playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
