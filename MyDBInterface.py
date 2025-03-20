@@ -252,7 +252,9 @@ async def listAvailableItems():
 
 async def requestAvailableItem(playerId: int, itemId: int, reason: str):
     print("requestAvailableItem")
-    data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "reason": reason}
+    data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "Reason": reason}
+    #if config.DEBUG_VERBOSE:
+    print (data)
 
     url = config.nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.post(url, json=data)
