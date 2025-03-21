@@ -76,6 +76,9 @@ async def help(interaction: discord.Interaction):
         message += ":arrow_forward:  **/updatedkp**\n"
         message += "Cacha la classifica punti DKP\n"
         message += "\n"
+        message += ":arrow_forward:  **/rankingdkp**\n"
+        message += "Mostra tutta la classifica punti DKP\n"
+        message += "\n"
         message += ":arrow_forward:  **/sync**\n"
         message += "Sincronizza i comandi del bot\n"
         message += "\n"
@@ -117,16 +120,50 @@ async def showdkp(interaction: discord.Interaction):
     membername = await MyDBInterface.getMemberName(str(interaction.user.id))
     if config.DEBUG_VERBOSE:
         print("membername "+str(membername))
-    message = "**🏆 Classifica DKP 🏆**\n"
+    message = ["**🏆 Classifica DKP 🏆**\n"]
+    i = 0
+    flag = True
+    while i < len(shared_data.dkp_rankings) and flag:
+        if membername == shared_data.dkp_rankings[i]["playerName"]:
+            message.append(f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n")
+            flag = False
+        i+=1
+    if len(message) == 1:
+        message.append("Non hai ancora partecipato ad alcun evento")
+    await interaction.response.send_message("".join(message), ephemeral=True)
+
+@bot.tree.command(name="rankingdkp", description="Mostra la classifica DKP")
+async def rankingdkp(interaction: discord.Interaction):
+    if not helpfunctions.checkRole(interaction.user.roles): #interaction.user.id != config.MYDISCORDID:  # Sostituisci con il tuo ID
+        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+        return
+    membername = await MyDBInterface.getMemberName(str(interaction.user.id))
+    if config.DEBUG_VERBOSE:
+        print("membername "+str(membername))
+    await interaction.response.defer(thinking=True, ephemeral=True)
+    message = ["**🏆 Classifica DKP 🏆**\n"]
+    if len(shared_data.dkp_rankings) == 0:
+        message += "Non sono presenti membri per fare una classifica"
+        await interaction.response.send_message(message, ephemeral=True)
+        return
     i = 0
     while i < len(shared_data.dkp_rankings):
         if not membername == shared_data.dkp_rankings[i]["playerName"]:
-            message += f"{i}. {shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n"
+            message.append( f"{i}. {shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n" )
         else:
-            message += f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n"
+            message.append(f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n")
+        if len(message) == 50:
+            await interaction.followup.send("".join(message), ephemeral=True)
+            message = []
         i+=1
-    await interaction.response.send_message(message, ephemeral=True)
+    if not len(message) == 50:
+        await interaction.followup.send("".join(message), ephemeral=True)
 
+#    await interaction.response.send_message(message, ephemeral=True)
+'''
+for chunk in [message_content[i:i+2000] for i in range(0, len(message_content), 2000)]:
+    await interaction.followup.send(chunk)
+'''
 '''
 ADMIN"discordId":
 '''

@@ -25,7 +25,7 @@ async def updateDKP():
     dkplist = await MyDBInterface.getAllDKP()
     if dkplist == -1:
         return False
-    dkp_rankings = []
+    shared_data.dkp_rankings = []
     for row in dkplist:
         if config.DEBUG_VERBOSE:
             print(row)

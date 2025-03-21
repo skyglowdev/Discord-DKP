@@ -131,7 +131,7 @@ async def postPlayerName1(playerName: str, discordId: str):
 async def getDiscordId1(playerName: str):
     if config.DEBUG_VERBOSE:
         print("getPlayerIdFromName")
-    url = config.nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi/GetAllMembers"
 
     response = requests.get(url)
 
