@@ -21,7 +21,7 @@ class CustomButton(discord.ui.Button):
         if config.DEBUG_VERBOSE:
             print ("CustomButton param")
             print (param)
-        super().__init__(label=label, style=style, custom_id=str(param))
+        super().__init__(label=label, style=style, custom_id=str(param)) 
         self.func = function
         self.param = param
 
@@ -31,13 +31,16 @@ class CustomButton(discord.ui.Button):
 
 #button_param = [{"label": "nome label", "func": funzione_ per_l'azione, "func_param": parametro_funzione}]
 class ViewButtonNumberedWithCustomId(View):
-    def __init__(self, button_param, function_interaction_check = func_DefaultInteraction):
+    def __init__(self, button_param, timeout = config.DISCORD_INTERACTION_TIMEOUT, function_interaction_check = func_DefaultInteraction):
         if config.DEBUG_VERBOSE:
             print ("ViewButtonNumberedWithCustomId param")
             print (button_param)
-        super().__init__()
-        print ("ViewButtonNumberedWithCustomId button_param")
-        print (button_param)
+
+        super().__init__(timeout=timeout)  # Imposta un timeout di 10 secondi
+        self.message = None
+        if config.DEBUG_VERBOSE:
+            print ("ViewButtonNumberedWithCustomId button_param")
+            print (button_param)
         self.function_interaction_check = function_interaction_check
         i = 0
         while i < len(button_param):
@@ -49,11 +52,21 @@ class ViewButtonNumberedWithCustomId(View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return self.function_interaction_check(interaction)
 
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+            if self.message:
+                try:
+                    await self.message.edit(view=self)
+                except discord.NotFound:
+                    pass
+
+
 '''
 ViewSelectWithCustomId
 '''
 class CustomSelect(discord.ui.Select):
-    def __init__(self, placeholder: str, select_param: list, function, func_param):
+    def __init__(self, placeholder: str, select_param: list, function, func_param,timeout = config.DISCORD_INTERACTION_TIMEOUT):
         self.func = function
         self.func_param = func_param
 
@@ -75,25 +88,16 @@ class CustomSelect(discord.ui.Select):
 
         super().__init__(placeholder=placeholder,options=options, max_values=1)
 
-        '''        options = [
-            discord.SelectOption(label="Opzione 1", description="Descrizione 1"),
-            discord.SelectOption(label="Opzione 2", description="Descrizione 2"),
-            discord.SelectOption(label="Opzione 3", description="Descrizione 3"),
-        ]
-        '''
     async def callback(self, interaction: discord.Interaction):
         await self.func(interaction, self, self.func_param)
 
 class ViewSelectWithCustomId(View):
-    def __init__(self, view_param, function_interaction_check = func_DefaultInteraction):
-
-        super().__init__()
-        
+    def __init__(self, view_param, timeout = config.DISCORD_INTERACTION_TIMEOUT, function_interaction_check = func_DefaultInteraction):
         if config.DEBUG_VERBOSE:
             print ("ViewSelectWithCustomId view_param")
             print (view_param)
-        super().__init__()
-
+        super().__init__(timeout=timeout)  # Imposta un timeout di 10 secondi
+        self.message = None
         self.function_interaction_check = function_interaction_check
         i = 0
         if config.DEBUG_VERBOSE:
@@ -114,6 +118,16 @@ class ViewSelectWithCustomId(View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return self.function_interaction_check(interaction)
 
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.NotFound:
+                pass
+
 #
 # la funzione chiamante deve avere await interaction.response.defer(thinking=True, ephemeral=True)  # Mostra un "sta pensando..."
 async def SplitSelectOptionsOnViews(interaction: discord.Interaction , message: str, placeholder: str, l: list, f: typing.Callable, func_param: dict):
@@ -125,7 +139,6 @@ async def SplitSelectOptionsOnViews(interaction: discord.Interaction , message: 
     j = 0
     i= 0
     while i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX < len_l:
-        print("k =" +str(k))
         # view di 5 select
         viewcustom_params = []
         while i+j*DISCORD_SELECT_OPTIONS_MAX+k*DISCORD_SELECT_MAX*DISCORD_SELECT_OPTIONS_MAX < len_l and j < DISCORD_SELECT_MAX:
@@ -140,10 +153,10 @@ async def SplitSelectOptionsOnViews(interaction: discord.Interaction , message: 
                 "select_param": selectcustom_params, "func": f, "func_param": func_param })
             i=0
             j+=1
-        if k == 0:
-            await interaction.followup.send(message,view=ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
-        else:
-            await interaction.followup.send(view=ViewSelectWithCustomId(viewcustom_params), ephemeral=True)
+        #if k == 0: else:
+        tmp_view = ViewSelectWithCustomId(viewcustom_params)
+        tmp_view.message = await interaction.followup.send(message,view=tmp_view, ephemeral=True)
+        #tmp_view.message = await interaction.original_response()  # Ottieni il messaggio per modificarlo dopo il timeout
         j=0
         k+=1
 

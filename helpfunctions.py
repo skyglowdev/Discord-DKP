@@ -27,7 +27,8 @@ async def updateDKP():
         return False
     dkp_rankings = []
     for row in dkplist:
-        print(row)
+        if config.DEBUG_VERBOSE:
+            print(row)
         shared_data.dkp_rankings.append({"playerId": row["idMember"], "playerName": row["name"], "points": row["totalePunti"]}) #row["id"],
     return True
 
@@ -78,7 +79,9 @@ async def callbackDropChooseItemType(interaction: discord.Interaction, param: di
     button_params.append({"label": "BIS WISH", "func": callbackDropChooseItemReason, "func_param": { "itemId": param["id"], "reason": "BIS WISH" } })
     button_params.append({"label": "BIS non WISHLIST", "func": callbackDropChooseItemReason, "func_param": { "itemId": param["id"], "reason": "BIS non WISHLIST" } })
     button_params.append({"label": "TRATTO", "func": callbackDropChooseItemReason, "func_param": { "itemId": param["id"], "reason": "TRATTO" } })
-    await interaction.response.send_message(message, view=discordcustomviews.ViewButtonNumberedWithCustomId(button_params), ephemeral=True)
+    view = discordcustomviews.ViewButtonNumberedWithCustomId(button_params)
+    await interaction.response.send_message(message, view=view, ephemeral=True)
+    view.message = await interaction.original_response()
 
 async def callbackDropChooseItemReason(interaction: discord.Interaction, param: dict):
     if config.DEBUG_VERBOSE:

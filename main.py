@@ -248,7 +248,9 @@ async def droplist(interaction: discord.Interaction):
         button_params.append( {"label": str(i+1), "itemName": list_items[i]["idItemNavigation"]["itemName"], 
             "func": helpfunctions.callbackDropChooseItemType, "func_param": { "itemName": list_items[i]["idItemNavigation"]["itemName"], "id": list_items[i]["id"] }} )
         i += 1
-    await interaction.response.send_message("".join(message), view=discordcustomviews.ViewButtonNumberedWithCustomId(button_params), ephemeral=True)
+    view = discordcustomviews.ViewButtonNumberedWithCustomId(button_params)
+    message = await interaction.response.send_message("".join(message), view=view, ephemeral=True)
+    view.message = await interaction.original_response()  # Ottieni il messaggio per modificarlo dopo il timeout
 
 @bot.tree.command(name="droprequests", description="Mostra tutti gli oggetti richiesti")
 async def droprequests(interaction: discord.Interaction):    

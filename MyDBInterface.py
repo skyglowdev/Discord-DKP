@@ -8,7 +8,7 @@ ACCOUNT MANAGEMENT
 async def getMemberName(discordId: str):
     if config.DEBUG_VERBOSE:
         print("getMemberName")
-    url = config.nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi/GetAllMembers"
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -40,7 +40,7 @@ async def getMemberName(discordId: str):
 async def getMemberId(discordId: str):
     if config.DEBUG_VERBOSE:
         print("getMemberId")
-    url = config.nGrokURI+"/MembersApi"
+    url = config.nGrokURI+"/MembersApi/GetAllMembers"
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -68,8 +68,9 @@ async def getMemberId(discordId: str):
     return ret
 
 async def getPlayerIdFromName(playerName: str):
-    print("getPlayerIdFromName")
-    url = config.nGrokURI+"/MembersApi"
+    if config.DEBUG_VERBOSE:
+        print("getPlayerIdFromName")
+    url = config.nGrokURI+"/MembersApi/GetAllMembers"
 
     response = requests.get(url)
 
@@ -117,7 +118,8 @@ async def CreateAccount(playerName: str, discordId: str):
     return ret
 
 async def postPlayerName1(playerName: str, discordId: str):
-    print("postPlayerName1")
+    if config.DEBUG_VERBOSE:
+        print("postPlayerName1")
     url = config.nGrokURI+"/MembersApi"
     data = { "idMembers": playerName, "characterName": discordId }
     response = requests.post(url, json=data)
@@ -127,7 +129,8 @@ async def postPlayerName1(playerName: str, discordId: str):
 
 
 async def getDiscordId1(playerName: str):
-    print("getPlayerIdFromName")
+    if config.DEBUG_VERBOSE:
+        print("getPlayerIdFromName")
     url = config.nGrokURI+"/MembersApi"
 
     response = requests.get(url)
@@ -155,7 +158,8 @@ async def getDiscordId1(playerName: str):
     return ret
 
 async def postPlayerName2(playerId: int, playerName: str, discordId1: str, discordId2: str):
-    print("postPlayerName2")
+    if config.DEBUG_VERBOSE:
+        print("postPlayerName2")
     url = config.nGrokURI+"/MembersApi/"+str(playerId)
     if config.DEBUG_VERBOSE:
         print("URL: "+ url)
@@ -172,7 +176,8 @@ async def postPlayerName2(playerId: int, playerName: str, discordId1: str, disco
 GENERIC
 '''
 async def getAllDKP():
-    print("getAllDKP")
+    if config.DEBUG_VERBOSE:
+        print("getAllDKP")
     url = config.nGrokURI+"/ClassificaApi"
     response = requests.get(url)
 
@@ -188,7 +193,8 @@ async def getAllDKP():
 ALL ITEMS
 '''
 async def listItems():
-    print("listItems")
+    if config.DEBUG_VERBOSE:
+        print("listItems")
     url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
@@ -200,7 +206,8 @@ async def listItems():
     return data
 
 async def listArchbossItems():
-    print("listArchbossItems")
+    if config.DEBUG_VERBOSE:
+        print("listArchbossItems")
     url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
@@ -218,7 +225,8 @@ async def listArchbossItems():
     return archdata
 
 async def listT2Items():
-    print("listT2Items")
+    if config.DEBUG_VERBOSE:
+        print("listT2Items")
     url = config.nGrokURI+"/ItemsApi?pageNumber=0&pageSize=0"
     response = requests.get(url)
 
@@ -239,7 +247,8 @@ async def listT2Items():
 AVAILABLE ITEMS
 '''
 async def listAvailableItems():
-    print("listAvailableItems")
+    if config.DEBUG_VERBOSE:
+        print("listAvailableItems")
     url = config.nGrokURI+"/DroppedItemsApi/AvailableDroppedItems"
     response = requests.get(url)
 
@@ -251,7 +260,8 @@ async def listAvailableItems():
     return data
 
 async def requestAvailableItem(playerId: int, itemId: int, reason: str):
-    print("requestAvailableItem")
+    if config.DEBUG_VERBOSE:
+        print("requestAvailableItem")
     data = { "idMember": playerId, "idLeftItemInGuildStorage": itemId, "Reason": reason}
     #if config.DEBUG_VERBOSE:
     print (data)
@@ -271,7 +281,8 @@ async def requestAvailableItem(playerId: int, itemId: int, reason: str):
 
 
 async def listAvailableItemsRequested(discordId: str):
-    print("listAvailableItemsRequested")
+    if config.DEBUG_VERBOSE:
+        print("listAvailableItemsRequested")
     url = config.nGrokURI+"/DroppeditemsrequestsApi"
     response = requests.get(url)
 
