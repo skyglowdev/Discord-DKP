@@ -10,6 +10,7 @@ import MyDBInterface
 import config
 import helpfunctions
 import shared_data
+import easteregg
 
 intents=discord.Intents.all()
 '''
@@ -122,7 +123,11 @@ async def register(interaction: discord.Interaction, playername: str):
 async def showdkp(interaction: discord.Interaction):
     membername = await MyDBInterface.getMemberName(str(interaction.user.id))
     if config.DEBUG_VERBOSE:
-        print("membername "+str(membername))
+        print("membername "+membername)
+    await interaction.response.defer(thinking=True, ephemeral=True)
+    eegg = easteregg.easteregg(membername)
+    if not eegg == None:
+        await interaction.followup.send(""+eegg, ephemeral=True)
     message = ["**🏆 Classifica DKP 🏆**\n"]
     i = 0
     flag = True
@@ -133,7 +138,7 @@ async def showdkp(interaction: discord.Interaction):
         i+=1
     if len(message) == 1:
         message.append("Non hai ancora partecipato ad alcun evento")
-    await interaction.response.send_message("".join(message), ephemeral=True)
+    await interaction.followup.send("".join(message), ephemeral=True)
 
 @bot.tree.command(name="rankingdkp", description="Mostra la classifica DKP")
 async def rankingdkp(interaction: discord.Interaction):
@@ -263,7 +268,6 @@ async def wish(interaction: discord.Interaction, item: str):
     message = f"E' stata inserita la richiesta {data["idItemRequest"]} per {item_name}\n"
     print(message)
     await interaction.response.send_message(message, ephemeral=True)
-    #await interaction.response.send_message(f"You selected: {item_name}")
 
 # Funzione per l'autocompletamento
 @wish.autocomplete("item")
@@ -292,9 +296,6 @@ async def wishlist(interaction: discord.Interaction):
     if playerId == -1:
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
         return
-    #if not helpfunctions.checkRole(interaction.user.roles):
-    #    await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
-    #    return
     listrequests = await MyDBInterface.listPlayerWishItems(playerId)
     if config.DEBUG_VERBOSE:
         print(len(listrequests))
