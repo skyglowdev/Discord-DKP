@@ -1,5 +1,7 @@
 #Escludi file di configurazione con secrets
 config.py
+test.py
+txt
 
 # Escludi file Python compilati
 __pycache__/
