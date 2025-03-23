@@ -152,7 +152,7 @@ async def rankingdkp(interaction: discord.Interaction):
     message = ["**🏆 Classifica DKP 🏆**\n"]
     if len(shared_data.dkp_rankings) == 0:
         message += "Non sono presenti membri per fare una classifica"
-        await interaction.response.send_message(message, ephemeral=True)
+        await interaction.response.send_message(message)
         return
     i = 0
     while i < len(shared_data.dkp_rankings):
@@ -161,11 +161,11 @@ async def rankingdkp(interaction: discord.Interaction):
         else:
             message.append(f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n")
         if len(message) == 50:
-            await interaction.followup.send("".join(message), ephemeral=True)
+            await interaction.followup.send("".join(message))
             message = []
         i+=1
     if not len(message) == 50:
-        await interaction.followup.send("".join(message), ephemeral=True)
+        await interaction.followup.send("".join(message))
 
 #    await interaction.response.send_message(message, ephemeral=True)
 '''

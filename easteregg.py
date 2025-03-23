@@ -2,7 +2,7 @@ import config
 
 playerlist = [
                 {"PolloAlCarry" , "Ciao Puffo! Mi spiace ma posso solo mostrarti i DKP di PolloAlCarry"},
-                {"TeoxJust" , "I DKP dei frontliner sono"}
+                {"TeoxJust" , "Grazie di essere il nostro miglior frontliner"}
                 ]
 
 def easteregg(playerName: str):
