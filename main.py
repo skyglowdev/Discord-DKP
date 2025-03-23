@@ -76,6 +76,9 @@ async def help(interaction: discord.Interaction):
         message += ":arrow_forward:  **/updatedkp**\n"
         message += "Cacha la classifica punti DKP\n"
         message += "\n"
+        message += ":arrow_forward:  **/updateitemlist**\n"
+        message += "Cacha gli Oggetti presenti\n"
+        message += "\n"
         message += ":arrow_forward:  **/rankingdkp**\n"
         message += "Mostra tutta la classifica punti DKP\n"
         message += "\n"
@@ -149,7 +152,7 @@ async def rankingdkp(interaction: discord.Interaction):
     i = 0
     while i < len(shared_data.dkp_rankings):
         if not membername == shared_data.dkp_rankings[i]["playerName"]:
-            message.append( f"{i}. {shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n" )
+            message.append(f"{i}. {shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti\n" )
         else:
             message.append(f"{i}. **{shared_data.dkp_rankings[i]["playerName"]} - [{shared_data.dkp_rankings[i]["points"]}] punti**\n")
         if len(message) == 50:
@@ -177,6 +180,16 @@ async def updatedkp(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("❌ La classifica DKP non è stata aggiornata correttamente", ephemeral=True)
 
+@bot.tree.command(name="updateitemlist", description="Cacha la classifica punti DKP")
+async def updateitemlist(interaction: discord.Interaction):
+    if not helpfunctions.checkRole(interaction.user.roles): #interaction.user.id != config.MYDISCORDID:  # Sostituisci con il tuo ID
+        await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
+        return
+    if await helpfunctions.updateItemList():
+        await interaction.response.send_message(f"✅ La lista degli oggetti è stata aggiornata correttamente", ephemeral=True)
+    else:
+        await interaction.response.send_message("❌ La lista degli oggetti non è stata aggiornata correttamente", ephemeral=True)
+
 @bot.tree.command(name="sync", description="Sincronizza i comandi slash (solo per admin)")
 async def sync(interaction: discord.Interaction):
     if not helpfunctions.checkRole(interaction.user.roles): #interaction.user.id != config.MYDISCORDID:  # Sostituisci con il tuo ID
@@ -191,10 +204,10 @@ async def sync(interaction: discord.Interaction):
 #    await await_presence()
 
 '''
-WISHLIST
+WISH LIST
 '''
-@bot.tree.command(name="wish", description="Aggiunta oggetto a lista desideri")
-async def wish(interaction: discord.Interaction):
+@bot.tree.command(name="wishitems", description="Lista ed aggiunta oggetto a lista desideri")
+async def wishitems(interaction: discord.Interaction):
     if config.DEBUG_VERBOSE:
         print("droplist")
     #if not helpfunctions.checkRole(interaction.user.roles):
@@ -209,29 +222,66 @@ async def wish(interaction: discord.Interaction):
 
     await interaction.response.defer(thinking=True, ephemeral=True)
 
-    list_items = await MyDBInterface.listT2Items()
-    if config.DEBUG_VERBOSE:
-        print("T2 len(list_items) "+str(len(list_items)))
-        print("T2 list_items \n"+json.dumps(list_items, indent=4))
-
     message= "Scegliere un oggetto T2 dalle liste sottostanti\n"
     placeholder= "Scegli un oggetto da inserire nella lista desideri"
     l = []
+    list_items = helpfunctions.returnItemListT2()
     for m in list_items:
         l.append({ "id": m["itemId"], "label": m["itemName"],
             "description": "" , "emoji": None}) #"emoji": "🔥"})
     await discordcustomviews.SplitSelectOptionsOnViews(interaction, message, placeholder, l, helpfunctions.callbackWishChooseItem, {"playerId": playerId})
 
     message= ":fire: Scegliere un arma archboss dalla lista: :fire:\n"
-    list_items = await MyDBInterface.listArchbossItems()
-    if config.DEBUG_VERBOSE:
-        print("ARCHBOSS len(list_items) "+str(len(list_items)))
-        print("ARCHBOSS list_items \n"+json.dumps(list_items, indent=4))
+    list_items = helpfunctions.returnItemListArchboss()
     l = []
     for m in list_items:
         l.append({ "id": m["itemId"], "label": m["itemName"],
             "description": "" , "emoji": None}) #"emoji": "🔥"})
     await discordcustomviews.SplitSelectOptionsOnViews(interaction, message, placeholder, l, helpfunctions.callbackWishChooseItem, {"playerId": playerId})
+
+@bot.tree.command(name="wish", description="Aggiunta oggetto a lista desideri")
+@app_commands.describe(item="Scrivere il nome dell'oggetto a cui si è interessati")
+async def wish(interaction: discord.Interaction, item: str):
+    print("wish")
+    playerId = await MyDBInterface.getMemberId(str(interaction.user.id))
+    if config.DEBUG_VERBOSE:
+        print(playerId)
+    if playerId == -1:
+        await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco**!", ephemeral=True)
+        return
+
+    list_requested = await MyDBInterface.listPlayerWishItems(playerId)
+    if ( len(list_requested) > config.MAX_REQUEST_ITEMS_NORMAL+config.MAX_REQUEST_ITEMS_ARCHBOSS ):
+        await interaction.response.send_message(f"Sono già stati richiesti il massimo numero di oggetti.\nIn caso di problemi contattare un admin", ephemeral=True)
+    return
+
+    item_name = ""
+    for row in shared_data.list_items:
+        if str(row["itemId"]) == item:
+            item_name = row["itemName"] # l'oggetto deve essere sempre presente nella lista (possibile problema in caso di rimozione dalla lista)
+    data = await MyDBInterface.requestWishItem(playerId, item)
+    message = f"E' stata inserita la richiesta {data["idItemRequest"]} per {item_name}\n"
+    await interaction.response.send_message(message, ephemeral=True)
+    #await interaction.response.send_message(f"You selected: {item_name}")
+
+# Funzione per l'autocompletamento
+@wish.autocomplete("item")
+async def item_autocomplete(interaction: discord.Interaction, current: str):
+    print("item_autocomplete")
+    # Filtra le opzioni in base a quello che l'utente sta digitando
+    choices = []
+    i = 0
+    flag = True
+    while i < len(shared_data.list_items) and flag:
+        if current.lower() in shared_data.list_items[i]["itemName"].lower():
+            if not shared_data.list_items[i]["tier"] == 0:
+                choices.append( discord.app_commands.Choice(name=shared_data.list_items[i]["itemName"],value=str(shared_data.list_items[i]["itemId"])) )
+            else:
+                choices.append( discord.app_commands.Choice(name="🔥 "+shared_data.list_items[i]["itemName"],value=str(shared_data.list_items[i]["itemId"])) )
+            if len(choices) == discordcustomviews.DISCORD_VIEW_MAX_ELEMENTS:
+                flag = False
+        i+=1
+    return choices
 
 @bot.tree.command(name="wishlist", description="Mostra la lista desideri")
 async def wishlist(interaction: discord.Interaction):
@@ -279,6 +329,7 @@ async def droplist(interaction: discord.Interaction):
     button_params = []
     i = 0
     while i < len(list_items):
+        #if list_items
         # Creiamo il messaggio dinamico con le opzioni
         message.append( f"{i+1}️⃣ ** {list_items[i]["idItemNavigation"]["itemName"]} droppato il {list_items[i]["dropDate"]} **\n" )
         # Creiamo una View con le opzioni dinamiche
@@ -325,4 +376,5 @@ async def on_ready():
     print(f"Registered commands: {commands}")  # Stampa i comandi registrati
 
 asyncio.run(helpfunctions.updateDKP())
+asyncio.run(helpfunctions.updateItemList())
 bot.run(config.TOKEN)

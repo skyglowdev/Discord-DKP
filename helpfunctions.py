@@ -19,6 +19,45 @@ def checkRole(roles):
 def checkChannel(interaction: discord.Interaction):
     return interaction.channel.id == config.CHANNEL_ID
 
+def ItemListRemoveDuplicates(l: list):
+    list_items = []
+    list_names = []
+    for row in l:
+        if config.DEBUG_VERBOSE:
+            print(row)
+        if not row["itemName"] in list_names:
+            list_items.append({"itemName": row["itemName"], "itemId": row["itemId"], "tier": row["tier"]})
+            list_names.append(row["itemName"])
+    return list_items
+
+
+async def updateItemList():
+    if config.DEBUG_VERBOSE:
+        print("updateItems")
+    list_items = await MyDBInterface.listItems()
+    if list_items == -1:
+        return False
+    shared_data.list_items = ItemListRemoveDuplicates(list_items)
+    return True
+
+def returnItemListT2():
+    t2data = []
+    for row in shared_data.list_items:
+        if config.DEBUG_VERBOSE:
+            print (row)
+        if row["tier"] == 2:
+            t2data.append({"itemId": row["itemId"], "itemName": row["itemName"]})
+    return t2data
+
+def returnItemListArchboss():
+    t2data = []
+    for row in shared_data.list_items:
+        if config.DEBUG_VERBOSE:
+            print (row)
+        if row["tier"] == 0:
+            t2data.append({"itemId": row["itemId"], "itemName": row["itemName"]})
+    return t2data
+
 async def updateDKP():
     if config.DEBUG_VERBOSE:
         print("updateDKP")

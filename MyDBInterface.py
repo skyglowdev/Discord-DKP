@@ -21,15 +21,16 @@ async def getMemberName(discordId: str):
     flag = 1
     ret = -1
     while i < len(data) and flag:
-        print("getMemberName data" + str(data[i]))
+        if config.DEBUG_VERBOSE:
+            print("getMemberName data" + str(data[i]))
         try:
             if data[i]["characterName"] == discordId or data[i]["secondaryCharacterName"] == discordId:
                 ret = data[i]["name"]
-                print(type(ret))
-                print("getMemberName ret"+ret)
+                if config.DEBUG:
+                    print(type(ret))
+                    print("getMemberName ret"+ret)
                 flag = 0
         except Exception as e:
-            if config.DEBUG_VERBOSE:
                 print(str(data[i]) + " record errato")
         finally:
             i += 1
@@ -60,7 +61,6 @@ async def getMemberId(discordId: str):
                 ret = data[i]["idMembers"]
                 flag = 0
         except Exception as e:
-            if config.DEBUG_VERBOSE:
                 print(str(data[i]) + " record errato")
         i += 1
     if config.DEBUG_VERBOSE:
@@ -75,7 +75,8 @@ async def getPlayerIdFromName(playerName: str):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Error: {response.status_code}")
+        if config.DEBUG:
+            print(f"Error: {response.status_code}")
 
     data = response.json()
     if config.DEBUG_VERBOSE:
@@ -87,14 +88,14 @@ async def getPlayerIdFromName(playerName: str):
     while i < len(data) and flag:
         try:
             if data[i]["name"] == playerName:
-                print(data[i])
+                if config.DEBUG_VERBOSE:
+                    print(data[i])
                 ret = data[i]["idMembers"]
                 flag = 0
                 if config.DEBUG_VERBOSE:
-                    print(ret + " id trovato")
+                    print(f"getPlayerIdFromName id trovato: {ret}")
         except Exception as e:
-            if config.DEBUG_VERBOSE:
-                print(str(data[i]) + " record errato")
+                print(f"getPlayerIdFromName record errato: {str(data[i])}")
         finally:
             i += 1
     return int(ret)
@@ -108,7 +109,8 @@ async def CreateAccount(playerName: str, discordId: str):
     print(data)
     response = requests.post(url, json=data)
 
-    print (response.json())
+    if config.DEBUG_VERBOSE:
+        print ("CreateAccount\n {response.json()}")
     ret = -1
     if response.status_code != 201:
         print(f"Error: {response.status_code}")
@@ -125,7 +127,7 @@ async def postPlayerName1(playerName: str, discordId: str):
     response = requests.post(url, json=data)
 
     if response.status_code != 200:
-        print(f"Error: {response.status_code}")
+        print(f"postPlayerName1 Error: {response.status_code}")
 
 
 async def getDiscordId1(playerName: str):
@@ -136,7 +138,7 @@ async def getDiscordId1(playerName: str):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Error: {response.status_code}")
+        print(f"getDiscordId1 Error: {response.status_code}")
 
     data = response.json()
 
@@ -149,10 +151,9 @@ async def getDiscordId1(playerName: str):
                 ret = data[i]["characterName"]
                 flag = 0
                 if config.DEBUG_VERBOSE:
-                    print(ret + " discordId trovato")
+                    print(f"getDiscordId1 discordId trovato: {ret}")
         except Exception as e:
-            if config.DEBUG_VERBOSE:
-                print(str(data[i]) + " record errato")
+                print(f"getDiscordId1 record errato: {str(data[i])}")
         finally:
             i += 1
     return ret
@@ -162,13 +163,13 @@ async def postPlayerName2(playerId: int, playerName: str, discordId1: str, disco
         print("postPlayerName2")
     url = config.nGrokURI+"/MembersApi/"+str(playerId)
     if config.DEBUG_VERBOSE:
-        print("URL: "+ url)
+        print("URL: {url}")
                 
     data =  { "idMembers": playerId, "name": playerName, "characterName": discordId1, "secondaryCharacterName": discordId2 }
     response = requests.put(url, json=data)
 
     if response.status_code != 204:
-        print(f"Error: {response.status_code}")
+        print(f"postPlayerName2 Error: {response.status_code}")
         return -1
     return 0
 
@@ -182,7 +183,7 @@ async def getAllDKP():
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Error: {response.status_code}")
+        print(f"getAllDKP Error: {response.status_code}")
         return -1
     data = response.json()
     if config.DEBUG_VERBOSE:
@@ -203,7 +204,10 @@ async def listItems():
     data = response.json()
     if config.DEBUG_VERBOSE:
         print (data)
-    return data
+    itemdata = []
+    for row in data:
+        itemdata.append({"itemId": row["idItem"], "itemName": row["itemName"], "tier":row["tier"]})
+    return itemdata
 
 async def listArchbossItems():
     if config.DEBUG_VERBOSE:
@@ -219,7 +223,7 @@ async def listArchbossItems():
     archdata = []
     for row in data:
         if config.DEBUG_VERBOSE:
-            print ("listArchbossItems row" + str(row))
+            print (f"listArchbossItems row {row}")
         if row["tier"] == 0:
             archdata.append({"itemId": row["idItem"], "itemName": row["itemName"]})
     return archdata
@@ -240,7 +244,7 @@ async def listT2Items():
         if config.DEBUG_VERBOSE:
             print (row)
         if row["tier"] == 2:
-            t2data.append({"itemId": row["idItem"], "itemName": row["itemName"], "idBoss": row["idBoss"]}),
+            t2data.append({"itemId": row["idItem"], "itemName": row["itemName"], "idBoss": row["idBoss"]})
     return t2data
 
 '''
@@ -404,7 +408,7 @@ def listItemRequests(int_itemId):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Error: {response.status_code}")
+        print(f"listItemRequests Error: {response.status_code}")
     data = response.json()
     if config.DEBUG_VERBOSE:
         print (data)
