@@ -253,7 +253,7 @@ async def wish(interaction: discord.Interaction, item: str):
     list_requested = await MyDBInterface.listPlayerWishItems(playerId)
     if ( len(list_requested) > config.MAX_REQUEST_ITEMS_NORMAL+config.MAX_REQUEST_ITEMS_ARCHBOSS ):
         await interaction.response.send_message(f"Sono già stati richiesti il massimo numero di oggetti.\nIn caso di problemi contattare un admin", ephemeral=True)
-    return
+        return
 
     item_name = ""
     for row in shared_data.list_items:
@@ -261,6 +261,7 @@ async def wish(interaction: discord.Interaction, item: str):
             item_name = row["itemName"] # l'oggetto deve essere sempre presente nella lista (possibile problema in caso di rimozione dalla lista)
     data = await MyDBInterface.requestWishItem(playerId, item)
     message = f"E' stata inserita la richiesta {data["idItemRequest"]} per {item_name}\n"
+    print(message)
     await interaction.response.send_message(message, ephemeral=True)
     #await interaction.response.send_message(f"You selected: {item_name}")
 
