@@ -148,7 +148,7 @@ async def rankingdkp(interaction: discord.Interaction):
     membername = await MyDBInterface.getMemberName(str(interaction.user.id))
     if config.DEBUG_VERBOSE:
         print("membername "+str(membername))
-    await interaction.response.defer(thinking=True, ephemeral=True)
+    await interaction.response.defer(thinking=True)
     message = ["**🏆 Classifica DKP 🏆**\n"]
     if len(shared_data.dkp_rankings) == 0:
         message += "Non sono presenti membri per fare una classifica"
@@ -168,14 +168,11 @@ async def rankingdkp(interaction: discord.Interaction):
         await interaction.followup.send("".join(message))
 
 #    await interaction.response.send_message(message, ephemeral=True)
-'''
-for chunk in [message_content[i:i+2000] for i in range(0, len(message_content), 2000)]:
-    await interaction.followup.send(chunk)
-'''
+
 '''
 ADMIN"discordId":
 '''
-@bot.tree.command(name="updatedkp", description="Cacha la classifica punti DKP")
+@bot.tree.command(name="updatedkp", description="Cache della classifica punti DKP")
 async def updatedkp(interaction: discord.Interaction):
     if not helpfunctions.checkRole(interaction.user.roles): #interaction.user.id != config.MYDISCORDID:  # Sostituisci con il tuo ID
         await interaction.response.send_message("❌ Non hai i permessi per eseguire questo comando.", ephemeral=True)
