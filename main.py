@@ -12,6 +12,8 @@ import helpfunctions
 import shared_data
 import easteregg
 
+BOT_VERSION = "1.0"
+
 intents=discord.Intents.all()
 '''
 intents = discord.Intents.default()
@@ -72,6 +74,10 @@ async def help(interaction: discord.Interaction):
     message += "Mostra la classifica punti DKP\n"
     message += "\n"
 
+    message += ":arrow_forward:  **/version**\n"
+    message += "Mostra la versione del bot\n"
+    message += "\n"
+
     if helpfunctions.checkRole(interaction.user.roles):
         message += "** SOLO PER ADMIN **\n"
         message += ":arrow_forward:  **/updatedkp**\n"
@@ -88,6 +94,13 @@ async def help(interaction: discord.Interaction):
         message += "\n"
 
     await interaction.response.send_message(message, ephemeral=True)
+
+@bot.tree.command(name="register", description="Registra il proprio discord nella lista membri")
+@app_commands.describe(playername="Il nome del giocatore.")
+async def register(interaction: discord.Interaction, playername: str):
+    BUILD_NUMBER = helpfunctions.get_build_number()
+    print(f"Versione Build: {BUILD_NUMBER}")
+    await interaction.response.send_message(f"Versione: {BOT_VERSION}.{BUILD_NUMBER}", ephemeral=True)
 
 @bot.tree.command(name="register", description="Registra il proprio discord nella lista membri")
 @app_commands.describe(playername="Il nome del giocatore.")

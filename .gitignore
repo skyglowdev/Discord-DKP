@@ -1,5 +1,4 @@
 #Escludi file di configurazione con secrets
-config.py
 secret.py
 test.py
 txt

@@ -8,6 +8,13 @@ import shared_data
 '''
 FUNZIONI GENERICHE
 '''
+def get_build_number():
+    try:
+        with open(".build-counter", "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return "0"  # Valore predefinito se il file non esiste
+
 def checkRole(roles):
     if config.DEBUG_VERBOSE:
         print("checkRole")
