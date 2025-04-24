@@ -8,6 +8,7 @@ from discord.ui import Button, View
 import discordcustomviews
 import MyDBInterface
 import config
+import secret
 import helpfunctions
 import shared_data
 import easteregg
@@ -395,4 +396,4 @@ async def on_ready():
 
 asyncio.run(helpfunctions.updateDKP())
 asyncio.run(helpfunctions.updateItemList())
-bot.run(config.TOKEN)
+bot.run(secret.TOKEN)
