@@ -15,7 +15,7 @@ import easteregg
 BUILD_NUMBER = helpfunctions.get_build_number()
 
 
-BOT_VERSION = "1.0."+{BUILD_NUMBER}
+BOT_VERSION = "1.0."+ BUILD_NUMBER
 
 
 intents=discord.Intents.all()
@@ -99,7 +99,7 @@ async def help(interaction: discord.Interaction):
 
     await interaction.response.send_message(message, ephemeral=True)
 
-@bot.tree.command(name="register", description="Registra il proprio discord nella lista membri")
+@bot.tree.command(name="showversion", description="Mostra la versione del bot")
 @app_commands.describe(playername="Il nome del giocatore.")
 async def register(interaction: discord.Interaction, playername: str):
     await interaction.response.send_message(f"Versione: {BOT_VERSION}", ephemeral=True)
