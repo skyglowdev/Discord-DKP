@@ -258,6 +258,8 @@ async def listAvailableItems():
 
     if response.status_code != 200:
         print(f"Error: {response.status_code}")
+    elif response.status_code == 200:
+        return False
     data = response.json()
     if config.DEBUG_VERBOSE:
         print (data)

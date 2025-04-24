@@ -12,7 +12,11 @@ import helpfunctions
 import shared_data
 import easteregg
 
-BOT_VERSION = "1.0"
+BUILD_NUMBER = helpfunctions.get_build_number()
+
+
+BOT_VERSION = "1.0."+{BUILD_NUMBER}
+
 
 intents=discord.Intents.all()
 '''
@@ -98,9 +102,7 @@ async def help(interaction: discord.Interaction):
 @bot.tree.command(name="register", description="Registra il proprio discord nella lista membri")
 @app_commands.describe(playername="Il nome del giocatore.")
 async def register(interaction: discord.Interaction, playername: str):
-    BUILD_NUMBER = helpfunctions.get_build_number()
-    print(f"Versione Build: {BUILD_NUMBER}")
-    await interaction.response.send_message(f"Versione: {BOT_VERSION}.{BUILD_NUMBER}", ephemeral=True)
+    await interaction.response.send_message(f"Versione: {BOT_VERSION}", ephemeral=True)
 
 @bot.tree.command(name="register", description="Registra il proprio discord nella lista membri")
 @app_commands.describe(playername="Il nome del giocatore.")
@@ -333,11 +335,15 @@ async def droplist(interaction: discord.Interaction):
         await interaction.response.send_message(f"Non sei registrato alla piattaforma utilizza /register **NomeInGioco** !", ephemeral=True)
         return
     list_items = await MyDBInterface.listAvailableItems()
+    message =[]
+    if list_items == False:
+        message.append( "Non ci sono oggetti richiedibili")
+        message = await interaction.response.send_message("".join(message), ephemeral=True)
+        return
     if config.DEBUG_VERBOSE:
         print(len(list_items))
         print(list_items)
 
-    message =[]
     button_params = []
     i = 0
     while i < len(list_items):
